@@ -5,21 +5,19 @@
 #include <malloc.h>
 #include "windows.h"
 
-int size_counter(char *PATH_O);
-void file_open(int *A, char *PATH_O, int SIZE);
-void file_save(int *B, int SIZE);
-void clr_init(int *Clr, int SIZE);
-void matrix_print(int *A, int SIZE);
-void array_print(int *A, int SIZE);
-void weight_matrix(int *A, int *W, int *V, int *H, int SIZE);
-void spanning_tree(int *B, int *W, int *V, int *H, int *Clr, int n, int SIZE);
-void bubbleSort(int *W, int *V, int *H, int SIZE);
-void appendW(int *W, int ch);
-void appendV(int *V, int ch);
-void appendH(int *H, int ch);
-
 #define MIN(a,b) (((a)<(b))?(a):(b))
-#define MAX(a,b) (((a)>(b))?(a):(b)) //prototypes.h end (for me)
+#define MAX(a,b) (((a)>(b))?(a):(b))
+
+int size_counter(char *PATH_O);
+void file_open(int *A, char *PATH_O, int Size);
+void file_save(int *B, int Size);
+void clr_init(int *Clr, int Size);
+void matrix_print(int *Matr, int Size);
+void array_print(int *Arr, int Size);
+void weight_matrix(int *Matr, int *W, int *V, int *H, int Size);
+void spanning_tree(int *Matr, int *W, int *V, int *H, int *Clr, int n, int Size);
+void bubbleSort(int *W, int *V, int *H, int Size);
+void append(int *W, int *V, int *H, int ch1, int ch2, int ch3); //prototypes.h end (for me)
 
 #define ARROUT
 #define INPUT
@@ -51,7 +49,7 @@ int main(int argc, char **argv) {
 
     char path[30];
 
-    snprintf(path, sizeof(path), "%s%d%s", PATH, number, EXT);
+    snprintf(path, sizeof(path), "%s%ld%s", PATH, number, EXT);
 
     char *PATH_O = path;
     int tree_size = size_counter(PATH_O);
@@ -148,26 +146,26 @@ int size_counter(char *PATH_O) {
     return ((int)sqrt(counter));
 }
 
-void file_open(int *A, char *PATH_O, int tree_size) {
+void file_open(int *A, char *PATH_O, int Size) {
     FILE *f;
 
     f = fopen(PATH_O, "r");
 
-    for (int i=0; i<tree_size; i++)
-        for (int k=0; k<tree_size; k++)
-            fscanf(f, "%d", (A + i*tree_size + k));
+    for (int i=0; i<Size; i++)
+        for (int k=0; k<Size; k++)
+            fscanf(f, "%d", (A + i*Size + k));
 
     fclose(f);
 }
 
-void file_save(int *B, int tree_size) {
+void file_save(int *B, int Size) {
     FILE *f;
 
     f = fopen(PATH_S, "w");
 
-    for (int i=0; i<tree_size; i++) {
-        for (int k=0; k<tree_size; k++)
-            fprintf(f, "%d ", *(B + i*tree_size + k));
+    for (int i=0; i<Size; i++) {
+        for (int k=0; k<Size; k++)
+            fprintf(f, "%d ", *(B + i*Size + k));
 
         fprintf(f, "\n");
     }
@@ -175,10 +173,10 @@ void file_save(int *B, int tree_size) {
     fclose(f);
 }
 
-void matrix_print(int *A, int tree_size) {
-    for (int i=0; i<tree_size; i++) {
-        for (int k=0; k<tree_size; k++)
-            printf("%d ", *(A + i*tree_size + k));
+void matrix_print(int *Matr, int Size) {
+    for (int i=0; i<Size; i++) {
+        for (int k=0; k<Size; k++)
+            printf("%d ", *(Matr + i*Size + k));
 
         printf("\n");
     }
@@ -186,41 +184,38 @@ void matrix_print(int *A, int tree_size) {
     printf("\n");
 }
 
-void array_print(int *A, int tree_size) {
-    for (int i=0; i<tree_size; i++)
-        printf("%d ", A[i]);
+void array_print(int *Arr, int Size) {
+    for (int i=0; i<Size; i++)
+        printf("%d ", Arr[i]);
 
     printf("\n");
 }
 
-void clr_init(int *Clr, int tree_size) {
-    for (int i=0; i<tree_size; i++)
+void clr_init(int *Clr, int Size) {
+    for (int i=0; i<Size; i++)
         Clr[i] = i;
 }
 
-void weight_matrix(int *A, int *W, int *V, int *H, int tree_size) {
-    for (int i=0; i<tree_size; i++)
-        for (int k=0; k<tree_size; k++)
-            if ((i < k) && ((A + i*tree_size + k) != 0)) {
-                appendW(W, *(A + i*tree_size + k));
-                appendV(V, i);
-                appendH(H, k);
-            }
+void weight_matrix(int *Matr, int *W, int *V, int *H, int Size) {
+    for (int i=0; i<Size; i++)
+        for (int k=0; k<Size; k++)
+            if ((i < k) && ((Matr + i*Size + k) != 0))
+                append(W, V, H, *(Matr + i*Size + k), i, k);
 }
 
-void spanning_tree(int *B, int *W, int *V, int *H, int *Clr, int n, int tree_size) {
+void spanning_tree(int *Matr, int *W, int *V, int *H, int *Clr, int n, int Size) {
     int k = 0;
 
-    for (int i=0; i<tree_size; i++)
-        for (int k=0; k<tree_size; k++)
-            *(B + i*tree_size + k) = 0;
+    for (int i=0; i<Size; i++)
+        for (int h=0; h<Size; h++)
+            *(Matr + i*Size + h) = 0;
 
     for (int i=0; i<n; i++) {
         if ((W[i] != 0) && (k < 1)) {
-            Clr[V[i]] = Clr[H[i]] = -tree_size;
+            Clr[V[i]] = Clr[H[i]] = -Size;
 
-            *(B + V[i]*tree_size + H[i]) = W[i];
-            *(B + H[i]*tree_size + V[i]) = W[i];
+            *(Matr + V[i]*Size + H[i]) = W[i];
+            *(Matr + H[i]*Size + V[i]) = W[i];
 
             k++;
         }
@@ -245,15 +240,15 @@ void spanning_tree(int *B, int *W, int *V, int *H, int *Clr, int n, int tree_siz
                             Clr[j] = minhash;
                 }
 
-                *(B + V[i]*tree_size + H[i]) = W[i];
-                *(B + H[i]*tree_size + V[i]) = W[i];
+                *(Matr + V[i]*Size + H[i]) = W[i];
+                *(Matr + H[i]*Size + V[i]) = W[i];
             }
     }
 }
 
-void bubbleSort(int *W, int *V, int *H, int tree_size) {
-    for (int i=0; i<(tree_size-1); i++)
-        for (int j=0; j<(tree_size-i-1); j++)
+void bubbleSort(int *W, int *V, int *H, int Size) {
+    for (int i=0; i<(Size-1); i++)
+        for (int j=0; j<(Size-i-1); j++)
             if (W[j] > W[j+1]) {
                 int varW = W[j];
                 int varV = V[j];
@@ -270,23 +265,11 @@ void bubbleSort(int *W, int *V, int *H, int tree_size) {
             }
 }
 
-void appendW(int *W, int ch) {
+void append(int *W, int *V, int *H, int ch1, int ch2, int ch3) {
     static int j = 0;
 
-    W[j] = ch;
-    j++;
-}
-
-void appendV(int *V, int ch) {
-    static int j = 0;
-
-    V[j] = ch;
-    j++;
-}
-
-void appendH(int *H, int ch) {
-    static int j = 0;
-
-    H[j] = ch;
+    W[j] = ch1;
+    V[j] = ch2;
+    H[j] = ch3;
     j++;
 }
