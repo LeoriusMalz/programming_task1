@@ -16,7 +16,7 @@ void top_sort(int *A, int *Str, int *Clr, int Size);
 void append(int *A, int ch); //prototypes.h end (for me)
 
 #define ARROUT
-#define INPUT
+#define INPUT1
 
 #define PATH "matrixes/graph_"
 #define EXT ".txt"
@@ -82,13 +82,13 @@ int main(int argc, char **argv) {
     free(Graph);
     free(Color);
 
-    if ((format == 1) || (format == 3)) {
+    if (((format == 1) || (format == 3)) && Color[0] != -1) {
         array_print(Seq, graph_size);
 
         getchar(); getchar();
     }
 
-    if ((format == 2) || (format == 3)) {
+    if (((format == 2) || (format == 3)) && Color[0] != -1) {
         system("cls");
         file_save(Seq, graph_size);
         printf("The adjacency matrix of the input orient graph was loaded from %s\nTopological sort sequence is preparing...\n", PATH_O);
@@ -98,6 +98,11 @@ int main(int argc, char **argv) {
         printf("A file with a sequence of vertexes was saved on path:\n%s\n", PATH_S);
 
         getchar();
+    }
+
+    if (Color[0] == -1) {
+        printf("Error: the graph cannot be sorted by topological sorting, cycles exist.");
+        getchar(); getchar();
     }
 
     free(Seq);
@@ -174,24 +179,43 @@ void array_print(int *A, int Size) {
 void top_sort(int *A, int *Str, int *Clr, int Size) {
     int k = 0;
 
-    while (k != Size) {
-        k = sum(Clr, Size);
+    if (check(A, Size) != 0)
+        Clr[0] = -1;
 
-        for (int j=0; j<Size; j++) {
-            int sumcol = 0;
+    else
+        while (k != Size) {
+            k = sum(Clr, Size);
 
-            for (int i=0; i<Size; i++)
-                sumcol += *(A + i*Size + j);
-
-            if ((sumcol == 0) && (Clr[j] == 0)) {
-                Clr[j] = 1;
-                append(Str, j+1);
+            for (int j=0; j<Size; j++) {
+                int sumcol = 0;
 
                 for (int i=0; i<Size; i++)
-                    *(A + j*Size + i) = 0;
+                    sumcol += *(A + i*Size + j);
+
+                if ((sumcol == 0) && (Clr[j] == 0)) {
+                    Clr[j] = 1;
+                    append(Str, j+1);
+
+                    for (int i=0; i<Size; i++)
+                        *(A + j*Size + i) = 0;
+                }
             }
         }
+}
+
+int check(int *A, int Size) {
+    int sumcol = 0;
+    int sum = 1;
+
+    for (int i=0; i<Size; i++) {
+        for (int j=0; j<Size; j++)
+            sumcol += *(A + i*Size + j);
+
+        sum *= sumcol;
+        sumcol = 0;
     }
+
+    return sum;
 }
 
 int sum(int *A, int Size) {
