@@ -19,7 +19,7 @@ void morphos(int *Matr, int n, int Size);
 int multiply(int *Arr, int Size); //prototypes.h end (for me)
 
 #define ARROUT
-#define INPUT
+#define INPUT1
 
 #define PATH "matrixes/graph_"
 #define EXT ".txt"
@@ -57,13 +57,10 @@ int main(int argc, char **argv) {
     int *A = NULL;
     int *Color = NULL;
     int *Points = NULL;
-    int *Lens = NULL;
 
     A = (int*)malloc(tree_size * tree_size * sizeof(int));
     Color = (int*)malloc(tree_size * tree_size * sizeof(int));
-
     Points = (int*)malloc(tree_size * sizeof(int));
-    Lens = (int*)malloc(tree_size * sizeof(int));
 
     file_open(A, PATH_O, tree_size);
 
@@ -76,7 +73,6 @@ int main(int argc, char **argv) {
 
     clr_init(A, Color, tree_size);
     point_init(Points, tree_size);
-    point_init(Lens, tree_size);
 
 #ifndef ARROUT
     array_print(Points, tree_size);
@@ -84,7 +80,6 @@ int main(int argc, char **argv) {
 #endif
 
     dijkstra_tree(A, Color, Points, beg, tree_size);
-    lens_solve(A, Color, Lens, beg, tree_size);
 
 #ifndef ARROUT
     array_print(Points, tree_size);
@@ -96,14 +91,14 @@ int main(int argc, char **argv) {
 
     if ((format == 1) || (format == 3)) {
         matrix_print(A, tree_size);
-        array_print(Lens, tree_size);
+        array_print(Points, tree_size);
 
         getchar(); getchar();
     }
 
     if ((format == 2) || (format == 3)) {
         system("cls");
-        file_save(A, Lens, tree_size);
+        file_save(A, Points, tree_size);
         printf("The weight matrix of the input graph was loaded from %s\nTree of the shortest paths is preparing...\n", PATH_O);
 
         Sleep(1000);
@@ -209,11 +204,12 @@ void point_init(int *Pnt, int Size) {
 }
 
 void dijkstra_tree(int *Matr, int *Clr, int *Pnt, int n, int Size) {
+    int J = n;
     Pnt[n] = 1;
     morphos(Clr, n, Size);
     clearity(Clr, n, Size);
 
-    while (multiply(Pnt, Size) != 1) {
+    while (multiply(Pnt, Size) == 0) {
         int minimum = 1000000;
         int X = 0;
         int Y = 0;
@@ -229,8 +225,12 @@ void dijkstra_tree(int *Matr, int *Clr, int *Pnt, int n, int Size) {
         *(Clr + X*Size + Y) = 3;
         morphos(Clr, Y, Size);
         clearity(Clr, Y, Size);
-        Pnt[Y] = 1;
+        Pnt[Y] = Pnt[J] + *(Matr + X*Size + Y);
+        J = Y;
     }
+
+    for (int i=0; i<Size; i++)
+        Pnt[i] -= 1;
 
     for (int i=0; i<Size; i++)
         for (int k=0; k<Size; k++)
@@ -238,42 +238,6 @@ void dijkstra_tree(int *Matr, int *Clr, int *Pnt, int n, int Size) {
                 *(Matr + i*Size + k) = 0;
                 *(Matr + k*Size + i) = 0;
             }
-
-    for (int i=0; i<Size; i++)
-        for (int k=0; k<Size; k++)
-            if (*(Clr + i*Size + k) != 0)
-                *(Clr + i*Size + k) = *(Matr + i*Size + k);
-}
-
-void lens_solve(int *Matr, int *Clr, int *L, int n, int Size) {
-    int s = 0;
-    int h = 0;
-    L[n] = 1;
-
-    for (int i=0; i<Size; i++)
-        if (*(Clr + n*Size + i) != 0)
-            L[i] = *(Matr + n*Size + i);
-
-    while (multiply(L, Size) == 0)
-        for (int i=0; i<Size; i++)
-            if (L[i] == 0) {
-                s = 0;
-                h = i;
-
-                while (h != n) {
-                    int k = 0;
-                    for (k=0; k<Size; k++)    {
-                        s += *(Clr + k*Size + h);
-
-                        if (*(Clr + k*Size + h) != 0)
-                            h = k;
-                    }
-                }
-
-                L[i] = s;
-            }
-
-    L[n] = 0;
 }
 
 void clearity(int *Matr, int n, int Size) {
