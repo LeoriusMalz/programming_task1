@@ -13,7 +13,6 @@ void clr_init(int *Matr, int *Clr, int Size);
 void matrix_print(int *Matr, int Size);
 void array_print(int *Arr, int Size);
 void dijkstra_tree(int *Matr, int *Clr, int *Pnt, int n, int Size);
-void lens_solve(int *Matr, int *Clr, int *L, int n, int Size);
 void clearity(int *Matr, int n, int Size);
 void morphos(int *Matr, int n, int Size);
 int multiply(int *Arr, int Size); //prototypes.h end (for me)
